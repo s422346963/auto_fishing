@@ -6,10 +6,36 @@ import time
 import ctypes
 import utils
 import qte_strategy as strategy
+import threading
+from pynput import keyboard
 ctypes.windll.user32.SetProcessDPIAware()
 GAME_TITLE = "BrownDust II" 
 
 region = utils.get_window_region(GAME_TITLE)
+
+# 线程安全的暂停标志
+stop_flag = threading.Event()
+stop_flag.clear()  # 初始状态为运行
+
+def on_press(key):
+    """键盘按下回调函数"""
+    global stop_flag
+    try:
+        if key == keyboard.Key.f3:
+            stop_flag.set()
+            print(">>> 下一次钓鱼已暂停 (按 F2 恢复)")
+        elif key == keyboard.Key.f2:
+            stop_flag.clear()
+            print(">>> 下一次钓鱼已恢复运行")
+    except AttributeError:
+        pass
+
+def start_keyboard_listener():
+    """启动键盘监听线程"""
+    listener = keyboard.Listener(on_press=on_press)
+    listener.daemon = True  # 设置为守护线程
+    listener.start()
+    return listener
 config = utils.read_ini()
 
 QTE_STRATEGIES_MAP = {
@@ -98,9 +124,9 @@ def wait_for_bite(sct):
 
             wait_start_time = wait_end_time
             # 处理切换时间
-            pydirectinput.keyDown("up")  
+            pydirectinput.keyDown("down")  
             time.sleep(2)
-            pydirectinput.keyUp("up")
+            pydirectinput.keyUp("down") 
 
             # 点击屏幕
             # 移动鼠标到窗口中心 (防止点歪)
@@ -171,8 +197,18 @@ def main():
     
     time.sleep(float(config["time"]["begin_fish_wait_time"]))
 
+    # 启动键盘监听线程
+    keyboard_listener = start_keyboard_listener()
+    print(">>> 键盘监听已启动 (F3暂停, F2恢复)")
+    
+    # 主循环
     with mss.mss() as sct: 
         while True:
+            # 检查暂停标志，如果设置了则等待
+            if stop_flag.is_set():
+                time.sleep(0.1)  # 短暂休眠避免CPU占用过高
+                continue
+
             # 1. 抛竿
             cast_rod()
             

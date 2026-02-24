@@ -182,7 +182,7 @@ dialog_confirm_top = 0.61
 
 ; 退出背包位置
 quit_backpack_left = 0.1
-quit_backpack_top = 0.12
+quit_backpack_top = 0.1
 
 [time]
 ; 一轮钓鱼结束后等待的时间，根据网络情况可以调整

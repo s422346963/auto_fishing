@@ -75,6 +75,9 @@ class BaseQTEStrategy:
     def finish_fishing(self, window_center_x, window_center_y):
         # 移动鼠标到窗口中心 (防止点歪)
         pydirectinput.moveTo(window_center_x, window_center_y)
+        time.sleep(0.5)
+        # 点击左键
+        pydirectinput.click()
         time.sleep(0.2)
         # 点击左键
         pydirectinput.click()
