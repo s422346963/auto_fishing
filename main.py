@@ -203,6 +203,7 @@ def main():
     
     # 主循环
     with mss.mss() as sct: 
+        fish_count = 0
         while True:
             # 检查暂停标志，如果设置了则等待
             if stop_flag.is_set():
@@ -221,6 +222,14 @@ def main():
             # 4. 结束
             print("================这轮的钓鱼结束================")
             time.sleep(float(config["time"]["round_end_wait_time"]))      
+            
+            # 5. 主动清理背包
+            fish_count += 1
+            if (fish_count > 25):
+                clear_backpack()
+                fish_count = 0
+                time.sleep(0.5)
+                pydirectinput.moveTo(region["left"] + region["width"]//2, region["top"] + region["height"]//2)
 
 if __name__ == "__main__": 
     main()
